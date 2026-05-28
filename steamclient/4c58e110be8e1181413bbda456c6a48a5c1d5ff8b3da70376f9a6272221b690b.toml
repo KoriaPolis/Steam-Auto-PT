@@ -88,13 +88,13 @@ name = "IsUserSubscribedAppInTicket"
 rva = "0x820AE0"
 sig = "40 53 56 57 48 83 EC ?? 41 8B F8 48 8B DA 48 8B F1 BA 40 00 00 00 41 B8 20 00 00 00 48 8D 4C 24 30 45 33 C9 E8 ?? ?? ?? ?? B2 01 48 8D 4C 24 30 E8 ?? ?? ?? ?? B2 01 48 8D 4C 24 30 E8 ?? ?? ?? ?? 8B 46 08 48 8D 94 24 80 00 00 00 41 B8 04 00 00 00 89 84 24 80 00 00 00 48 8D 4C 24 30 E8 ?? ?? ?? ?? 41 B8 04 00 00 00 C7 84 24 80 00 00 00 78"
 
-[0x3F665AE2]
-name = "KeyValues_FindOrCreateKey"
+[0x2B6E86E3]
+name = "FindOrCreateKey"
 rva = "0x1127970"
 sig = "48 2B D1 F6 C1"
 
-[0xFCF8389F]
-name = "KeyValues_ReadAsBinary"
+[0xFD85C235]
+name = "ReadAsBinary"
 rva = "0xCFBEE0"
 sig = "48 8B C4 44 88 48 20 55"
 
