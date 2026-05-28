@@ -15,5 +15,5 @@ sig = "48 89 5C 24 18 55 56 41 57 48 83 EC ?? 48 8B E9"
 
 [0x910E725A]
 name = "TopManagerCall"
-rva = "0x662C1F"
-sig = "48 89 9C 24 80 00 00 00 48 89 7C 24 68"
+rva = "0x662C2C"
+sig = "83 FE 07 0F 84 ?? ?? ?? ?? E8"
