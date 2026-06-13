@@ -1,0 +1,71 @@
+name: Sign pattern TOMLs
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - pattern
+    paths:
+      - "steamclient/**/*.toml"
+      - "steamui/**/*.toml"
+
+permissions:
+  contents: write
+
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pattern branch
+        uses: actions/checkout@v4
+        with:
+          ref: pattern
+
+      - name: Restore private key
+        shell: bash
+        env:
+          PATTERN_RSA_PRIVATE_KEY_B64: ${{ secrets.PATTERN_RSA_PRIVATE_KEY_B64 }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${PATTERN_RSA_PRIVATE_KEY_B64}" ]; then
+            echo "Missing PATTERN_RSA_PRIVATE_KEY_B64 secret"
+            exit 1
+          fi
+
+          mkdir -p .signing
+          printf '%s' "$PATTERN_RSA_PRIVATE_KEY_B64" | base64 -d > .signing/pattern_private.pem
+          chmod 600 .signing/pattern_private.pem
+
+      - name: Sign TOML files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          openssl rsa -in .signing/pattern_private.pem -pubout -out .signing/pattern_public.pem 2>/dev/null
+
+          find steamclient steamui -type f -name '*.toml' -print0 | while IFS= read -r -d '' file; do
+            openssl dgst -sha256 -sign .signing/pattern_private.pem -out "$file.sig" "$file"
+            openssl dgst -sha256 -verify .signing/pattern_public.pem -signature "$file.sig" "$file"
+            echo "Signed $file"
+          done
+
+      - name: Commit signature files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf .signing
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add steamclient/**/*.sig steamui/**/*.sig
+
+          if git diff --cached --quiet; then
+            echo "No signature changes."
+          else
+            git commit -m "Sign pattern TOMLs"
+            git push
+          fi
