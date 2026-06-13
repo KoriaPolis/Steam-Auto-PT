@@ -1,0 +1,72 @@
+image: ubuntu:24.04
+
+stages:
+  - sign
+
+sign_pattern_tomls:
+  stage: sign
+  scripts:
+    - |
+      set -euo pipefail
+
+      echo "Branch: ${CI_COMMIT_REF_NAME:-unknown}"
+
+      if [ "${CI_COMMIT_REF_NAME:-}" != "pattern" ]; then
+        echo "Not pattern branch, skipping."
+        exit 0
+      fi
+
+      echo "Installing tools..."
+      apt-get update -y
+      apt-get install -y openssl git ca-certificates
+
+      echo "Checking required variables..."
+      if [ -z "${PATTERN_RSA_PRIVATE_KEY_B64:-}" ]; then
+        echo "Missing PATTERN_RSA_PRIVATE_KEY_B64"
+        exit 1
+      fi
+
+      if [ -z "${GITFLIC_PUSH_USER:-}" ]; then
+        echo "Missing GITFLIC_PUSH_USER"
+        exit 1
+      fi
+
+      if [ -z "${GITFLIC_PUSH_TOKEN:-}" ]; then
+        echo "Missing GITFLIC_PUSH_TOKEN"
+        exit 1
+      fi
+
+      echo "Restoring private signing key..."
+      mkdir -p .signing
+      printf '%s' "$PATTERN_RSA_PRIVATE_KEY_B64" | base64 -d > .signing/pattern_private.pem
+      chmod 600 .signing/pattern_private.pem
+
+      echo "Extracting public key..."
+      openssl rsa -in .signing/pattern_private.pem -pubout -out .signing/pattern_public.pem 2>/dev/null
+
+      echo "Signing TOML files..."
+      find steamclient steamui -type f -name '*.toml' -print0 | while IFS= read -r -d '' file; do
+        openssl dgst -sha256 -sign .signing/pattern_private.pem -out "$file.sig" "$file"
+        openssl dgst -sha256 -verify .signing/pattern_public.pem -signature "$file.sig" "$file"
+        echo "Signed $file"
+      done
+
+      echo "Removing private key from job workspace..."
+      rm -rf .signing
+
+      echo "Preparing git commit..."
+      git config user.name "gitflic-ci"
+      git config user.email "gitflic-ci@example.local"
+
+      git add steamclient steamui
+
+      if git diff --cached --quiet; then
+        echo "No signature changes."
+        exit 0
+      fi
+
+      git commit -m "Sign pattern TOMLs"
+
+      echo "Pushing signatures back to pattern branch..."
+      git remote set-url origin "https://${GITFLIC_PUSH_USER}:${GITFLIC_PUSH_TOKEN}@gitflic.ru/project/midrags/steam-auto-pt.git"
+      git push origin HEAD:pattern
