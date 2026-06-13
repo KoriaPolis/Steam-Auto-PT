@@ -1,4 +1,4 @@
-image: ubuntu:24.04
+﻿image: ubuntu:24.04
 
 stages:
   - sign
@@ -9,16 +9,19 @@ sign_pattern_tomls:
     - |
       set -euo pipefail
 
-      echo "Branch: ${CI_COMMIT_REF_NAME:-unknown}"
+      BRANCH="${CI_COMMIT_REF_NAME:-${CI_COMMIT_BRANCH:-unknown}}"
+      BRANCH="${BRANCH#refs/heads/}"
 
-      if [ "${CI_COMMIT_REF_NAME:-}" != "pattern" ]; then
+      echo "Branch: $BRANCH"
+
+      if [ "$BRANCH" != "pattern" ]; then
         echo "Not pattern branch, skipping."
         exit 0
       fi
 
       echo "Installing tools..."
       apt-get update -y
-      apt-get install -y openssl git ca-certificates
+      apt-get install -y openssl git ca-certificates coreutils
 
       echo "Checking required variables..."
       if [ -z "${PATTERN_RSA_PRIVATE_KEY_B64:-}" ]; then
@@ -44,11 +47,36 @@ sign_pattern_tomls:
       echo "Extracting public key..."
       openssl rsa -in .signing/pattern_private.pem -pubout -out .signing/pattern_public.pem 2>/dev/null
 
-      echo "Signing TOML files..."
+      echo "Signing TOML files as RSA-PSS-SHA256 hex..."
       find steamclient steamui -type f -name '*.toml' -print0 | while IFS= read -r -d '' file; do
-        openssl dgst -sha256 -sign .signing/pattern_private.pem -out "$file.sig" "$file"
-        openssl dgst -sha256 -verify .signing/pattern_public.pem -signature "$file.sig" "$file"
-        echo "Signed $file"
+        tmp="$file.sig.bin"
+
+        openssl dgst -sha256 \
+          -sign .signing/pattern_private.pem \
+          -sigopt rsa_padding_mode:pss \
+          -sigopt rsa_pss_saltlen:32 \
+          -sigopt rsa_mgf1_md:sha256 \
+          -out "$tmp" \
+          "$file"
+
+        openssl dgst -sha256 \
+          -verify .signing/pattern_public.pem \
+          -sigopt rsa_padding_mode:pss \
+          -sigopt rsa_pss_saltlen:32 \
+          -sigopt rsa_mgf1_md:sha256 \
+          -signature "$tmp" \
+          "$file"
+
+        od -An -tx1 -v "$tmp" | tr -d ' \n' > "$file.sig"
+        rm -f "$tmp"
+
+        hex_len="$(wc -c < "$file.sig" | tr -d ' ')"
+        if [ "$hex_len" != "512" ]; then
+          echo "Bad hex signature length for $file: $hex_len"
+          exit 1
+        fi
+
+        echo "Signed PSS hex $file"
       done
 
       echo "Removing private key from job workspace..."
@@ -58,7 +86,7 @@ sign_pattern_tomls:
       git config user.name "gitflic-ci"
       git config user.email "gitflic-ci@example.local"
 
-      git add steamclient steamui
+      find steamclient steamui -type f -name '*.sig' -print0 | xargs -0 git add
 
       if git diff --cached --quiet; then
         echo "No signature changes."

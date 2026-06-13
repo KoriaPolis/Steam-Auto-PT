@@ -1,4 +1,4 @@
-name: Sign pattern TOMLs
+﻿name: Sign pattern TOMLs
 
 on:
   workflow_dispatch:
@@ -8,6 +8,7 @@ on:
     paths:
       - "steamclient/**/*.toml"
       - "steamui/**/*.toml"
+      - ".github/workflows/sign-patterns.yml"
 
 permissions:
   contents: write
@@ -38,7 +39,7 @@ jobs:
           printf '%s' "$PATTERN_RSA_PRIVATE_KEY_B64" | base64 -d > .signing/pattern_private.pem
           chmod 600 .signing/pattern_private.pem
 
-      - name: Sign TOML files
+      - name: Sign TOML files as RSA-PSS-SHA256 hex
         shell: bash
         run: |
           set -euo pipefail
@@ -46,9 +47,34 @@ jobs:
           openssl rsa -in .signing/pattern_private.pem -pubout -out .signing/pattern_public.pem 2>/dev/null
 
           find steamclient steamui -type f -name '*.toml' -print0 | while IFS= read -r -d '' file; do
-            openssl dgst -sha256 -sign .signing/pattern_private.pem -out "$file.sig" "$file"
-            openssl dgst -sha256 -verify .signing/pattern_public.pem -signature "$file.sig" "$file"
-            echo "Signed $file"
+            tmp="$file.sig.bin"
+
+            openssl dgst -sha256 \
+              -sign .signing/pattern_private.pem \
+              -sigopt rsa_padding_mode:pss \
+              -sigopt rsa_pss_saltlen:32 \
+              -sigopt rsa_mgf1_md:sha256 \
+              -out "$tmp" \
+              "$file"
+
+            openssl dgst -sha256 \
+              -verify .signing/pattern_public.pem \
+              -sigopt rsa_padding_mode:pss \
+              -sigopt rsa_pss_saltlen:32 \
+              -sigopt rsa_mgf1_md:sha256 \
+              -signature "$tmp" \
+              "$file"
+
+            od -An -tx1 -v "$tmp" | tr -d ' \n' > "$file.sig"
+            rm -f "$tmp"
+
+            hex_len="$(wc -c < "$file.sig" | tr -d ' ')"
+            if [ "$hex_len" != "512" ]; then
+              echo "Bad hex signature length for $file: $hex_len"
+              exit 1
+            fi
+
+            echo "Signed PSS hex $file"
           done
 
       - name: Commit signature files
@@ -61,7 +87,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add steamclient/**/*.sig steamui/**/*.sig
+          find steamclient steamui -type f -name '*.sig' -print0 | xargs -0 git add
 
           if git diff --cached --quiet; then
             echo "No signature changes."
