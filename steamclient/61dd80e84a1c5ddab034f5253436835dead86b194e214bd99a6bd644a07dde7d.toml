@@ -53,6 +53,11 @@ name = "ConfigStoreGetBinary"
 rva = "0x5B9DC0"
 sig = "40 53 55 56 57 48 83 EC 38 48 63 FA 49 8B E9"
 
+[0xEA5C8123]
+name = "EvaluateRemoteStorageSyncState"
+rva = "0x741520"
+sig = "48 89 5C 24 08 48 89 74 24 20 57 48 83 EC ?? 41 0F B6 F8 8B"
+
 [0xAC76B47D]
 name = "GetAppDataFromAppInfo"
 rva = "0x4A8D80"
@@ -82,6 +87,11 @@ sig = "48 89 5C 24 18 89 54 24 10 55 56 57 48 83 EC 20 44 8B 49 20"
 name = "GetPipeClient"
 rva = "0x87F020"
 sig = "85 D2 74 ?? 44 0F B7 CA 44 3B 49 60"
+
+[0x9F5AA276]
+name = "GetRemoteStorageSyncState"
+rva = "0x77CFE0"
+sig = "40 53 56 57 48 83 EC ?? 8B DA 48 8B F9 BA 40 00 00 00 48 8D 4C 24 30 45 33 C9 41 B8 20 00 00 00 E8 ?? ?? ?? ?? B2 01 48 8D 4C 24 30 E8 ?? ?? ?? ?? B2 0D 48 8D 4C 24 30 E8 ?? ?? ?? ?? 8B 47 08 48 8D 94 24 80 00 00 00 41 B8 04 00 00 00 89 84 24 80 00 00 00 48 8D 4C 24 30 E8 ?? ?? ?? ?? 41 B8 04 00 00 00 C7 84 24 80 00 00 00 BA 30 03 0A"
 
 [0x83109B83]
 name = "GetSubscribedApps"
@@ -157,6 +167,16 @@ sig = "48 8B C4 55 48 8D A8 98 F6 FF FF"
 name = "RequiresLegacyCDKey"
 rva = "0x843590"
 sig = "48 89 5C 24 18 55 56 57 48 83 EC ?? 49 8B E8 ?? ?? ?? ?? F1 BA 40 00 00 00 41 B8 20 00 00 00 48 8D 4C 24 30 45 33 C9 E8 ?? ?? ?? ?? B2 01 48 8D 4C 24 30 E8 ?? ?? ?? ?? B2 01 48 8D"
+
+[0x74B2414A]
+name = "RunAutoCloudOnAppExit"
+rva = "0x845910"
+sig = "48 89 5C 24 18 48 89 74 24 20 57 48 83 EC ?? 8B DA 48 8B F9 BA 40 00 00 00 48 8D 4C 24 30 45 33 C9 41 B8 20 00 00 00 E8 ?? ?? ?? ?? B2 01 48 8D 4C 24 30 E8 ?? ?? ?? ?? B2 0D 48 8D 4C 24 30 E8 ?? ?? ?? ?? 8B 47 08 48 8D 54 24 78 41 B8 04 00 00 00 89 44 24 78 48 8D 4C 24 30 E8 ?? ?? ?? ?? 41 B8 04 00 00 00 C7 44 24 78 40 98"
+
+[0xBCD5FCA5]
+name = "RunAutoCloudOnAppLaunch"
+rva = "0x845A80"
+sig = "48 89 5C 24 18 48 89 74 24 20 57 48 83 EC ?? 8B DA 48 8B F9 BA 40 00 00 00 48 8D 4C 24 30 45 33 C9 41 B8 20 00 00 00 E8 ?? ?? ?? ?? B2 01 48 8D 4C 24 30 E8 ?? ?? ?? ?? B2 0D 48 8D 4C 24 30 E8 ?? ?? ?? ?? 8B 47 08 48 8D 54 24 78 41 B8 04 00 00 00 89 44 24 78 48 8D 4C 24 30 E8 ?? ?? ?? ?? 41 B8 04 00 00 00 C7 44 24 78 EE 31"
 
 [0x68211B4D]
 name = "SendCallbackToPipe"
