@@ -38,6 +38,11 @@ name = "CConfigStore::GetCandidate"
 rva = "0x5BBD70"
 sig = "40 53 55 56 57 48 83 EC ?? 48 63 FA 49 8B D8 0F"
 
+[0x069F6B6B]
+name = "CConfigStore::GetGameLanguage"
+rva = "0x6F9040"
+sig = "40 55 56 41 57 48 81 EC E0 0A 00 00"
+
 [0x2B2C9E5C]
 name = "CConfigStore::RemoveKey"
 rva = "0x5BB450"
