@@ -47,3 +47,14 @@ funcHash = "0x2D3D3947"
 wrapper_rva = "0x745AC0"
 fencepost = "0x2EDF5EE6"
 argc = 3
+
+[IClientRemoteStorage]
+interface_id = 13
+vtable_rva = "0x12A5730"
+
+[IClientRemoteStorage.FileExists]
+method_index = 0
+funcHash = "0x00000000"
+wrapper_rva = "0x61F6F0"
+fencepost = "0x00000000"
+argc = 1
