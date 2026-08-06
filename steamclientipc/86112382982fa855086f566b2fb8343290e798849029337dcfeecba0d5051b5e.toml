@@ -54,7 +54,7 @@ vtable_rva = "0x12A5730"
 
 [IClientRemoteStorage.FileExists]
 method_index = 0
-funcHash = "0x00000000"
+funcHash = "0x376E83D6"
 wrapper_rva = "0x61F6F0"
 fencepost = "0x00000000"
 argc = 1
