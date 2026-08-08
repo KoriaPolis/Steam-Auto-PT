@@ -9,7 +9,7 @@ The version number is the client build's Unix timestamp; the Updated column show
 | Channel | Version | Updated (UTC) |
 | --- | --- | --- |
 | Stable Win64 | 1785799196 | 2026-08-03 23:19:56 UTC |
-| Beta Win64 | 1785979169 | 2026-08-06 01:19:29 UTC |
+| Beta Win64 | 1786141909 | 2026-08-07 22:31:49 UTC |
 
 ## Contents
 
@@ -17,4 +17,4 @@ The version number is the client build's Unix timestamp; the Updated column show
 - `steamclientipc/<sha256>.toml` — IPC vtable layouts
 - `steamui/<sha256>.toml`      — steamui.dll function patterns
 
-*Last checked: 2026-08-06 01:57:05 UTC*
+*Last checked: 2026-08-08 03:24:23 UTC*
